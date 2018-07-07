@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from user.models import UserGeneralInfo,User,CountryCodeLookup
-from user.serializers import UserGeneralInfo,UserSerializer,CountryCodeLookupSerializer
+from user.serializers import UserGeneralInfoSerializer,UserSerializer,CountryCodeLookupSerializer
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -42,8 +42,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request, format=None):
          content = request.data
+         country_code_lookup = CountryCodeLookup.objects.get(pk=content.get("country_code_lookup"))
 
-         user = User.objects.create(first_name = content.get("first_name"), surname = content.get("surname"), email= content.get("email"), date_of_birth = content.get("date_of_birth"), phone = content.get("phone"),country_code_lookup = content.get("country_code_lookup"), gender = content.get("gender"), password = content.get("password") )
+         user = User.objects.create(first_name = content.get("first_name"),
+                                    surname = content.get("surname"),
+                                    email= content.get("email"),
+                                    date_of_birth = content.get("date_of_birth"),
+                                    phone = content.get("phone"),
+                                    country_code_lookup = country_code_lookup,
+                                    gender = content.get("gender"), password = content.get("password") )
          user.save()
 
          serializer = UserSerializer(data=content)
@@ -52,9 +59,11 @@ class UserViewSet(viewsets.ModelViewSet):
          return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     def update(self, request, pk, format=None):
-        try :
+
+
             content = request.data
-            user = User.objects.get(pk=pk)
+            user = self.get_object(pk)
+
             if content.get("first_name")!=None:
                 user.first_name=content.get("first_name")
 
@@ -68,23 +77,14 @@ class UserViewSet(viewsets.ModelViewSet):
             if content.get("phone") != None:
                 user.phone = content.get("phone")
             if content.get("country_code_lookup")!=None:
-                user.country_code_lookup=content.get("country_code_lookup")
+                user.country_code_lookup=CountryCodeLookup.objects.get(pk=content.get("country_code_lookup"))
             if content.get("gender")!=None:
                 user.gender=content.get("gender")
             if content.get("password")!=None:
                 user.password=content.get("password")
 
             user.save()
-
-
-
-
-
-        except User.DoesNotExist:
-           raise Http404
-
-
-
+            return Response(status=status.HTTP_200_OK)
 
     def destroy(self, request, pk,format=None):
         user=self.get_object(pk)
@@ -92,10 +92,51 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class UserGeneralInfoViewSet(viewsets.ModelViewSet):
+    queryset = UserGeneralInfo.objects.all()
+    serializer_class = UserGeneralInfoSerializer
+
+    def list(self,request,user_pk):
+        queryset = self.queryset.filter(user=user_pk)
+        serializer = UserGeneralInfoSerializer(queryset,many=True)
+        return Response(serializer.data)
 
 
 
+    def retrieve(self,request,pk,user_pk):
+        queryset = self.queryset.filter(pk=pk,user=user_pk)
+        serializer = UserGeneralInfoSerializer(queryset,many=True)
+        return Response(serializer.data)
 
+    def get_object(self,pk,user_pk):
+        try:
+            return UserGeneralInfo.objects.get(pk=pk,user=user_pk)
+        except UserGeneralInfo.DoesNotExist:
+            raise Http404
+
+
+    def update(self,request,pk,user_pk,format=None):
+
+        user_info= self.get_object(pk,user_pk)
+        content = request.data
+
+        if content.get("user")!=None:
+            user_info.user=content.get("user")
+
+        if content.get("hight")!=None:
+            user_info.hight=content.get("hight")
+
+        if content.get("weight")!=None:
+             user_info.weight=content.get("weight")
+        if content.get("marital_status")!=None:
+             user_info.marital_status=content.get("marital_status")
+        if content.get("registered_treatment") != None:
+             user_info.registered_treatment = content.get("registered_treatment")
+
+
+
+        user_info.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 

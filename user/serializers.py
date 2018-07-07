@@ -15,4 +15,4 @@ class CountryCodeLookupSerializer (serializers.ModelSerializer):
 class UserGeneralInfoSerializer (serializers.ModelSerializer):
     class Meta :
         model = UserGeneralInfo
-        fields = ('id','user','hight','weight','marital_status','registered_treatment','created','updated')
+        fields = ('id','user_id','hight','weight','marital_status','registered_treatment','created','updated')

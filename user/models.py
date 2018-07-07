@@ -43,24 +43,24 @@ class User (models.Model):
 
 class UserGeneralInfo(models.Model):
     class MaritalStatusChoice(Enum):
-         M = ('Married')
-         S = ('Single')
-         D = ('Divorced')
-         W = ('Widowed')
+         M = ('M','Married')
+         S = ('S','Single')
+         D = ('D','Divorced')
+         W = ('W','Widowed')
     @classmethod
     def get_value (cls,member):
         return (cls[member].value[0])
 
     user= models.ForeignKey(User,on_delete=models.CASCADE)
-    height = models.FloatField()
+    hight = models.FloatField()
     weight = models.FloatField()
     marital_status = models.CharField(
          max_length=45,
         choices=[(x,x.value) for x in MaritalStatusChoice ]
     )
     registered_treatment = models.TextField()
-    created = models.DateTimeField()
-    updated = models.DateTimeField()
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['user_id']
