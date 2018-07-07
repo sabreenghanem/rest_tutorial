@@ -42,13 +42,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request, format=None):
          content = request.data
+         country_code_lookup = CountryCodeLookup.objects.get(pk=content.get("country_code_lookup"))
 
          user = User.objects.create(first_name = content.get("first_name"),
                                     surname = content.get("surname"),
                                     email= content.get("email"),
                                     date_of_birth = content.get("date_of_birth"),
                                     phone = content.get("phone"),
-                                    country_code_lookup = content.get("country_code_lookup"),
+                                    country_code_lookup = country_code_lookup,
                                     gender = content.get("gender"), password = content.get("password") )
          user.save()
 
@@ -76,7 +77,7 @@ class UserViewSet(viewsets.ModelViewSet):
             if content.get("phone") != None:
                 user.phone = content.get("phone")
             if content.get("country_code_lookup")!=None:
-                user.country_code_lookup=content.get("country_code_lookup")
+                user.country_code_lookup=CountryCodeLookup.objects.get(pk=content.get("country_code_lookup"))
             if content.get("gender")!=None:
                 user.gender=content.get("gender")
             if content.get("password")!=None:
